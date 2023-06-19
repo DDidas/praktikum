@@ -3,6 +3,8 @@ var matchesFound = 0;
 var numCards = 16;
 var board = document.getElementById('game-board');
 var imgIndices = createShuffledIndices();
+var moves = 0;
+var movesCounter = document.getElementById('moves-counter'); // Referenz auf das Züge-Element
 
 for (var i = 0; i < numCards; i++) {
     var card = createCard(imgIndices[i]);
@@ -31,6 +33,8 @@ function handleCardClick(e) {
     if (cardsFlipped.length < 2 && !currentCard.classList.contains('flipped')) {
         flipCard(currentCard);
         if (cardsFlipped.length === 2) {
+            moves++;
+            movesCounter.textContent = 'Züge: ' + moves;
             checkForMatch();
         }
     }
@@ -50,7 +54,7 @@ function checkForMatch() {
             markAsMatched(cardsFlipped[1]);
             matchesFound++;
             if (matchesFound === numCards / 2) {
-                alert('Du hast gewonnen!');
+                alert('Du hast gewonnen! Anzahl der Züge: ' + moves);
             }
         } else {
             unflipCards(cardsFlipped[0], cardsFlipped[1]);
