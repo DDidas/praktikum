@@ -7,9 +7,16 @@
 </head>
 <body>
 <h1>
-    Memoryspiel mit 8 versch. Karten
+    Memoryspiel
 </h1>
-<h2 id="moves-counter">Züge: 0</h2>
+<form id="config-form">
+    <label for="pairs-input">Anzahl der Paare:</label>
+    <input type="number" id="pairs-input" min="1" max="8" value="4">
+    <label for="players-input">Anzahl der Spieler:</label>
+    <input type="number" id="players-input" min="1" value="1">
+    <button type="submit">Spiel starten</button>
+</form>
+<div id="game-info"></div>
 <div id="game-board"></div>
 <script src="script.js"></script>
 </body>
