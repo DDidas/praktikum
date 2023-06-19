@@ -13,6 +13,7 @@ var configForm = document.getElementById('config-form');
 configForm.addEventListener('submit', startGame);
 
 function startGame(event) {
+    document.getElementById('game-board').style.visibility = "visible";
     event.preventDefault();
     numPairs = parseInt(document.getElementById('pairs-input').value);
     var numPlayers = parseInt(document.getElementById('players-input').value);
