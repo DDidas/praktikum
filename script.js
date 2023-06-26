@@ -19,9 +19,10 @@ function startGame(event) {
     var numPlayers = parseInt(document.getElementById('players-input').value);
     numCards = numPairs * 2;
     resetGame();
-    createPlayers(numPlayers);
+    var colors = ['red', 'blue', 'green', 'purple', 'orange', 'cyan', 'pink', 'yellow', 'brown', 'magenta', 'teal', 'olive', 'maroon', 'navy', 'aqua'];
+    createPlayers(numPlayers, colors);
     createBoard();
-    displayGameInfo();
+    displayGameInfo(colors);
 }
 
 function resetGame() {
@@ -34,8 +35,7 @@ function resetGame() {
     gameInfo.innerHTML = '';
 }
 
-function createPlayers(numPlayers) {
-    var colors = ['red', 'blue', 'green', 'purple', 'orange', 'cyan', 'pink', 'yellow'];
+function createPlayers(numPlayers, colors) {
     for (var i = 0; i < numPlayers; i++) {
         players.push({
             name: 'Spieler ' + (i + 1),
@@ -59,11 +59,12 @@ function displayGameInfo() {
     for (var i = 0; i < players.length; i++) {
         var playerInfo = document.createElement('div');
         playerInfo.classList.add('player-info');
-        playerInfo.innerHTML = '<span class="player-name">' + players[i].name + '</span><span class="moves-counter">Züge: ' + players[i].moves + '</span><span class="pairs-counter">Paare: ' + players[i].pairsFound + '</span>';
+        playerInfo.innerHTML = `<span class="player-name" style="color: ${players[i].color}">${players[i].name}</span><span class="moves-counter">Züge: ${players[i].moves}</span><span class="pairs-counter">Paare: ${players[i].pairsFound}</span>`;
         gameInfo.appendChild(playerInfo);
     }
     updateCurrentPlayer();
 }
+
 
 function updateCurrentPlayer() {
     var playerInfos = gameInfo.getElementsByClassName('player-info');
@@ -81,25 +82,30 @@ function handleCardClick(e) {
     if (cardsFlipped.length < 2 && !currentCard.classList.contains('flipped')) {
         flipCard(currentCard);
         if (cardsFlipped.length === 2) {
+            players[currentPlayer].moves++; // Zähle den Zug für den aktuellen Spieler
+            updateMovesCounter();
             if (!isPairMatched) {
-                players[currentPlayer].moves++; // Zähle den Zug für den aktuellen Spieler
-                updateMovesCounter();
                 switchPlayer(); // Wechsel zum nächsten Spieler
             }
             checkForMatch();
-            if (matchesFound === numPairs) {
-                var winner = getWinner();
-                var message = '';
-                if (winner === -1) {
-                    message = 'Unentschieden! Kein Spieler hat gewonnen.';
-                } else {
-                    message = 'Spieler ' + players[winner].name + ' hat gewonnen mit ' + players[winner].pairsFound + ' Paaren!';
-                }
-                setTimeout(function() {
-                    alert(message);
-                }, 500);
-            }
         }
+    }
+    checkIfGameOver();
+}
+
+
+function checkIfGameOver() {
+    if (matchesFound === numPairs) {
+        setTimeout(function() {
+            var winner = getWinner();
+            var message = '';
+            if (winner === -1) {
+                message = 'Unentschieden! Kein Spieler hat gewonnen.';
+            } else {
+                message = 'Spieler ' + players[winner].name + ' hat gewonnen mit ' + players[winner].pairsFound + ' Paaren in ' + players[winner].moves + ' Zügen!';
+            }
+            alert(message);
+        }, 1000);
     }
 }
 
@@ -124,8 +130,10 @@ function checkForMatch() {
             isPairMatched = false; // Das aufgedeckte Paar stimmt nicht überein
         }
         cardsFlipped = [];
+        checkIfGameOver(); // Überprüfen Sie hier auf Spielende
     }, 1000);
 }
+
 
 function markAsMatched(card) {
     var currentPlayerColor = players[currentPlayer].color;
@@ -168,16 +176,20 @@ function createCard(value) {
     return card;
 }
 
+
 function getWinner() {
     var maxPairsFound = Math.max(...players.map(player => player.pairsFound));
-    var winners = players.filter(player => player.pairsFound === maxPairsFound);
-    if (winners.length === players.length) {
-        return -1; // Unentschieden
+    var playersWithMaxPairs = players.filter(player => player.pairsFound === maxPairsFound);
+    if (playersWithMaxPairs.length === 1) {
+        return players.indexOf(playersWithMaxPairs[0]); // Wenn nur ein Spieler die höchste Anzahl an Paaren gefunden hat, ist er der Gewinner.
     } else {
-        var maxMoves = Math.max(...winners.map(player => player.moves));
-        return players.findIndex(player => player.pairsFound === maxPairsFound && player.moves === maxMoves);
+        // Bei mehreren Spielern mit der gleichen Anzahl an gefundenen Paaren gewinnt der Spieler mit den wenigsten Zügen.
+        var minMoves = Math.min(...playersWithMaxPairs.map(player => player.moves));
+        var playerWithMinMoves = playersWithMaxPairs.find(player => player.moves === minMoves);
+        return players.indexOf(playerWithMinMoves);
     }
 }
+
 
 function updateMovesCounter() {
     var movesCounters = gameInfo.getElementsByClassName('moves-counter');
